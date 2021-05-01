@@ -63,12 +63,14 @@ def pygame_loop(conway: Conway, screen_size: tuple = (1600, 800), fps: int = 30)
 if __name__ == '__main__':
     import numpy as np
     from configs import *
-    base = np.zeros((15, 20))
-    start_config = insert_pattern(base, PULSER).T
-    start_config = insert_pattern(start_config, BLINKER, offset=(7, 5))
-    start_config = insert_pattern(start_config, BLINKER, offset=(-7, 5))
-    start_config = insert_pattern(start_config, BLINKER, offset=(7, -5))
-    start_config = insert_pattern(start_config, BLINKER, offset=(-7, -5))
-    screen_size = np.array(start_config.shape) * 80
+    base = np.zeros((100, 100))
+    start_config = base
+    #start_config = insert_pattern(base, PULSER).T
+    start_config = insert_pattern(base, GOSPER).T
+    #start_config = insert_pattern(start_config, BLINKER, offset=(7, 5))
+    #start_config = insert_pattern(start_config, BLINKER, offset=(-7, 5))
+    #start_config = insert_pattern(start_config, BLINKER, offset=(7, -5))
+    #start_config = insert_pattern(start_config, BLINKER, offset=(-7, -5))
+    screen_size = np.array(start_config.shape) * 10
     conway = Conway(start_config)
-    pygame_loop(conway, screen_size=screen_size, fps=4)
+    pygame_loop(conway, screen_size=screen_size, fps=30)

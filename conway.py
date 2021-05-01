@@ -88,7 +88,27 @@ class Conway(ConwayBase):
         pass
     
     def update_field(self):
-        pass
-    
+        shape = self.current_field.shape
+        new_field = np.array(self.current_field)
+        for col in range(shape[0]):
+            for row in range(shape[1]):
+                # calculate living neighbors
+                living_neighbors = 0
+                for i in range(-1,2):
+                    for j in range(-1,2):
+                        if (not (i == 0 and j == 0)) and 0 <= col+i < shape[0] and 0 <= row+j < shape[1]:
+                            # ignore the field itself and don't try to read out of bounds.
+                            living_neighbors += self.current_field[col+i, row+j]
+                # calculate
+                if self.current_field[col, row]:
+                    # living
+                    if living_neighbors < 2 or living_neighbors > 3:
+                        new_field[col, row] = 0
+                else:
+                    # dead
+                    if living_neighbors == 3:
+                        new_field[col, row] = 1
+        self.current_field = new_field
+
     def show_field(self) -> np.ndarray:
-        pass
+        return np.array([p * 0xFF0000 for p in self.current_field])

@@ -34,7 +34,21 @@ def insert_pattern(base, pattern, offset=None):
     field : TYPE
         The simulation field with the pattern placed.
     """
-    pass
+    if type(pattern) != np.ndarray:
+        pattern = np.array(pattern)
+
+    print("calculate offset")
+    offset_x = int(base.shape[0] / 2 - (pattern.shape[0] / 2))
+    offset_y = int(base.shape[1] / 2 - (pattern.shape[1] / 2))
+    if offset is not None:
+        (offset_add_x, offset_add_y) = offset
+        offset_x += offset_add_x
+        offset_add_y += offset_add_y
+    for ind_x in range(pattern.shape[0]):
+        for ind_y in range(pattern.shape[1]):
+            base[offset_x + ind_x][offset_y + ind_y] = pattern[ind_x][ind_y]
+
+    return base
 
 
 BLINKER = [[1, 1, 1]]
