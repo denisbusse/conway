@@ -85,30 +85,47 @@ class Conway(ConwayBase):
     def __init__(self, start_field, border:bool = True,
                  fade: tuple = (1, 1, 1), gauss_sigma: tuple = (0, 0, 0)):
         super().__init__(start_field)
+        self.current_view = np.zeros_like(self.current_field)
+        self.mask = np.zeros_like(self.current_view)
+        self.mask[1:-1,1:-1] = 1
         pass
     
-    def update_field(self):
+    def update_field_slow(self):
         shape = self.current_field.shape
         new_field = np.array(self.current_field)
-        for col in range(shape[0]):
-            for row in range(shape[1]):
-                # calculate living neighbors
-                living_neighbors = 0
-                for i in range(-1,2):
-                    for j in range(-1,2):
-                        if (not (i == 0 and j == 0)) and 0 <= col+i < shape[0] and 0 <= row+j < shape[1]:
-                            # ignore the field itself and don't try to read out of bounds.
-                            living_neighbors += self.current_field[col+i, row+j]
-                # calculate
-                if self.current_field[col, row]:
-                    # living
-                    if living_neighbors < 2 or living_neighbors > 3:
-                        new_field[col, row] = 0
-                else:
-                    # dead
-                    if living_neighbors == 3:
-                        new_field[col, row] = 1
+        for (col, row) in np.ndindex(shape):
+            # calculate living neighbors
+            living_neighbors = 0
+            for i in range(-1, 2):
+                for j in range(-1, 2):
+                    if (not (i == 0 and j == 0)) and 0 <= col+i < shape[0] and 0 <= row+j < shape[1]:
+                        # ignore the field itself and don't try to read out of bounds.
+                        living_neighbors += self.current_field[col+i, row+j]
+            # calculate
+            if self.current_field[col, row]:
+                # living
+                if living_neighbors < 2 or living_neighbors > 3:
+                    new_field[col, row] = 0
+            else:
+                # dead
+                if living_neighbors == 3:
+                    new_field[col, row] = 1
         self.current_field = new_field
 
+    def update_field_fast(self):
+        rolling = [(0, 1), (1, 1), (1, 0), (1, -1), (-1, 1), (-1, 0), (-1, -1), (0, -1)]
+        roll_arr = [np.roll(np.roll(self.current_field, roll[0], axis=0), roll[1], axis=1) for roll in rolling]
+        living_neighbors = sum(roll_arr)
+        deading = np.logical_and(self.current_field, np.logical_or(living_neighbors < 2, living_neighbors > 3))
+        living = np.logical_and(np.logical_not(self.current_field), living_neighbors == 3)
+        self.current_field[deading] = 0
+        self.current_field[living] = 1
+        self.current_field[self.mask == 0] = 0
+
+    def update_field(self):
+        #self.update_field_slow()
+        self.update_field_fast()
+
     def show_field(self) -> np.ndarray:
-        return np.array([p * 0xFF0000 for p in self.current_field])
+        self.current_view = 0.05 * self.current_view + 1 * self.current_field
+        return np.array(0xFF0000 * self.current_view)
